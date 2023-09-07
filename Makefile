@@ -6,11 +6,8 @@ SHELL := bash
 .SUFFIXES:
 .ONESHELL:
 
-CERT_MANAGER_VERSION ?= 1.12.2
-# Decoupled the BUNDLE_VERSION from the CERT_MANAGER_VERSION so that I can do a
-# patch release containing the fix for:
-# https://github.com/cert-manager/cert-manager/issues/5551
-export BUNDLE_VERSION ?= 1.12.2
+KUEUE_VERSION ?= 0.4.1
+export BUNDLE_VERSION ?= 0.4.1
 # DO NOT PUBLISH PRE-RELEASES TO THE STABLE CHANNEL!
 # For stable releases use: `candidate stable`.
 # For pre-releases use: `candidate`.
@@ -24,13 +21,13 @@ OPERATORHUB_CATALOG_IMAGE ?= quay.io/operatorhubio/catalog:latest
 help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[0-9a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-OLM_PACKAGE_NAME ?= cert-manager
-IMG_BASE ?= gcr.io/jetstack-richard/cert-manager
+OLM_PACKAGE_NAME ?= kueue
+IMG_BASE ?= registry.k8s.io/kueue/kueue
 BUNDLE_IMG_BASE ?= ${IMG_BASE}-olm-bundle
 BUNDLE_IMG ?= ${BUNDLE_IMG_BASE}:${BUNDLE_VERSION}
 CATALOG_IMG ?= ${IMG_BASE}-olm-catalogue:${CATALOG_VERSION}
-E2E_CLUSTER_NAME ?= cert-manager-olm
-CERT_MANAGER_LOGO_URL ?= https://github.com/cert-manager/website/raw/3998bef91af7266c69f051a2f879be45eb0b3bbb/static/favicons/favicon-256.png
+E2E_CLUSTER_NAME ?= kueue-olm
+KUEUE_LOGO_URL ?= https://github.com/cncf/artwork/blob/5281c91b356fccf31aa12fcb3374799774438b59/projects/kueue/icon/color/kueue-icon-color.png?raw=true
 
 KUSTOMIZE_VERSION ?= 4.5.7
 KIND_VERSION ?= 0.16.0
@@ -70,28 +67,28 @@ ${downloadable_executables}:
 
 build_v = build/${BUNDLE_VERSION}
 
-cert_manager_manifest_upstream = build/cert-manager.${CERT_MANAGER_VERSION}.upstream.yaml
-${cert_manager_manifest_upstream}: url := https://github.com/jetstack/cert-manager/releases/download/v${CERT_MANAGER_VERSION}/cert-manager.yaml
+kueue_manifest_upstream = build/kueue.${KUEUE_VERSION}.upstream.yaml
+${kueue_manifest_upstream}: url := https://github.com/kubernetes-sigs/kueue/releases/download/v${KUEUE_VERSION}/manifests.yaml
 
-cert_manager_logo = build/cert-manager-logo.png
-${cert_manager_logo}: url := ${CERT_MANAGER_LOGO_URL}
+kueue_logo = build/kueue-logo.png
+${kueue_logo}: url := ${KUEUE_LOGO_URL}
 
-downloadable_files = ${cert_manager_manifest_upstream} ${cert_manager_logo}
+downloadable_files = ${kueue_manifest_upstream} ${kueue_logo}
 ${downloadable_files}:
 	mkdir -p $(dir $@)
 	curl --remote-time -sSL -o $@ ${url}
 
-cert_manager_manifest_olm = ${build_v}/cert-manager.${CERT_MANAGER_VERSION}.olm.yaml
-fixup_cert_manager_manifests = hack/fixup-cert-manager-manifests
-${cert_manager_manifest_olm}: ${cert_manager_manifest_upstream} ${fixup_cert_manager_manifests}
+kueue_manifest_olm = ${build_v}/kueue.${KUEUE_VERSION}.olm.yaml
+fixup_kueue_manifests = hack/fixup-kueue-manifests
+${kueue_manifest_olm}: ${kueue_manifest_upstream} ${fixup_kueue_manifests}
 	mkdir -p $(dir $@)
-	${fixup_cert_manager_manifests} < ${cert_manager_manifest_upstream} > $@
+	${fixup_kueue_manifests} < ${kueue_manifest_upstream} > $@
 
 kustomize_config_dir = ${build_v}/config
 kustomize_csv = ${kustomize_config_dir}/csv.yaml
-${kustomize_csv}: ${cert_manager_manifest_olm}
+${kustomize_csv}: ${kueue_manifest_olm}
 	mkdir -p $(dir $@)
-	ln -f $(abspath ${cert_manager_manifest_olm}) $@
+	ln -f $(abspath ${kueue_manifest_olm}) $@
 
 scorecard_dir = config/scorecard
 scorecard_files := $(shell find ${scorecard_dir} -type f)
@@ -106,7 +103,7 @@ ${kustomize_config}: ${kustomize_csv} ${scorecard_files} ${kustomize}
 # to a bug in operator-sdk.
 # See https://github.com/operator-framework/operator-sdk/issues/4951
 bundle_osdk_dir = ${build_v}/bundle_osdk
-bundle_osdk_csv = ${bundle_osdk_dir}/manifests/cert-manager.clusterserviceversion.yaml
+bundle_osdk_csv = ${bundle_osdk_dir}/manifests/kueue.clusterserviceversion.yaml
 ${bundle_osdk_csv}: ${operator_sdk} ${kustomize_config} ${kustomize}
 	rm -rf ${bundle_osdk_dir}
 	mkdir -p ${bundle_osdk_dir}
@@ -121,14 +118,14 @@ ${bundle_osdk_csv}: ${operator_sdk} ${kustomize_config} ${kustomize}
 
 bundle_dir = bundle
 bundle_dockerfile = ${bundle_dir}/bundle.Dockerfile
-bundle_csv = ${bundle_dir}/manifests/cert-manager.clusterserviceversion.yaml
+bundle_csv = ${bundle_dir}/manifests/kueue.clusterserviceversion.yaml
 bundle_csv_global_config = global-csv-config.yaml
 fixup_csv = hack/fixup-csv
-${bundle_csv}: ${bundle_osdk_csv} ${fixup_csv} ${cert_manager_logo} ${bundle_csv_global_config}
+${bundle_csv}: ${bundle_osdk_csv} ${fixup_csv} ${kueue_logo} ${bundle_csv_global_config}
 	rm -rf ${bundle_dir}
 	cp -a ${bundle_osdk_dir} ${bundle_dir}
 	${fixup_csv} \
-		--logo ${cert_manager_logo} \
+		--logo ${kueue_logo} \
 		--config ${bundle_csv_global_config} \
 		< ${bundle_osdk_csv} > $@
 
@@ -137,7 +134,7 @@ bundle-generate: ## Create / update the OLM bundle files
 bundle-generate: ${bundle_csv}
 
 .PHONY: bundle-build
-bundle-build: ## Create a cert-manager OLM bundle image
+bundle-build: ## Create a kueue OLM bundle image
 bundle-build: ${bundle_csv} ${bundle_dockerfile}
 	docker build -f ${bundle_dockerfile} -t ${BUNDLE_IMG} ${bundle_dir}
 
@@ -164,7 +161,7 @@ define catalog_yaml
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
- name: cert-manager-test-catalog
+ name: kueue-test-catalog
  namespace: olm
 spec:
  sourceType: grpc
@@ -182,12 +179,12 @@ define subscription_yaml
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
- name: cert-manager-subscription
+ name: kueue-subscription
  namespace: operators
 spec:
  channel: $(firstword ${BUNDLE_CHANNELS})
- name: cert-manager
- source: cert-manager-test-catalog
+ name: kueue
+ source: kueue-test-catalog
  sourceNamespace: olm
 endef
 
@@ -265,9 +262,9 @@ crc-instance: ${PULL_SECRET} ${startup_script} ${crc_makefile}
 E2E_TEST ?=
 
 .PHONY: crc-e2e
-crc-e2e: ## Run cert-manager E2E tests on the crc-instance
+crc-e2e: ## Run kueue E2E tests on the crc-instance
 crc-e2e: ${E2E_TEST}
-	: $${E2E_TEST:?"Please set E2E_TEST to the path to the cert-manager E2E test binary"}
+	: $${E2E_TEST:?"Please set E2E_TEST to the path to the kueue E2E test binary"}
 	gcloud compute ssh crc@${CRC_INSTANCE_NAME} -- rm -f ./e2e
 	gcloud compute scp --compress ${E2E_TEST} crc@${CRC_INSTANCE_NAME}:e2e
 	gcloud compute ssh crc@${CRC_INSTANCE_NAME} -- ./e2e --repo-root=/dev/null --ginkgo.focus="CA\ Issuer" --ginkgo.skip="Gateway"

@@ -1,4 +1,4 @@
-# Copyright 2020 The Jetstack cert-manager contributors.
+# Copyright 2023 The Kubernetes contributors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM quay.io/jetstack/cert-manager-controller:v1.3.1 as source
+FROM registry.k8s.io/kueue/kueue:v0.4.1 as source
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-COPY --from=source /app /app
-# Required Licenses
-COPY --from=source /licenses /licenses
+COPY --from=source . .
 
 ### Required OpenShift Labels
-LABEL name="cert-manager controller" \
-      vendor="Jetstack" \
-      version="v1.3.1" \
+LABEL name="kueue controller" \
+      vendor="k8s.io" \
+      version="v0.4.1" \
       release="1" \
-      summary="This is the cert-manager controller image." \
-      description="This image contains the main cert-manager controller."
+      summary="This is the kueue controller image." \
+      description="This image contains the main kueue controller."
 
-ENTRYPOINT ["/app/cmd/controller/controller"]
+ENTRYPOINT ["/manager"]

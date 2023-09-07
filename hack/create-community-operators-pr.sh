@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Create a PR at one of the operator-hub repos containing the current cert-manager bundle
+# Create a PR at one of the operator-hub repos containing the current kueue bundle
 #
 #  BUNDLE_VERSION=1.6.2 UPSTREAM=k8s-operatorhub FORK=wallrj REPO=community-operators ./hack/create-community-operators-pr.sh
 #  BUNDLE_VERSION=1.6.2 UPSTREAM=redhat-openshift-ecosystem FORK=wallrj REPO=community-operators-prod ./hack/create-community-operators-pr.sh
@@ -37,20 +37,20 @@ git remote set-url upstream "https://github.com/${UPSTREAM}/${REPO}.git"
 git fetch --all --prune
 
 # Create or reset the local branch
-git checkout -B "cert-manager-${BUNDLE_VERSION}" upstream/main
+git checkout -B "kueue-${BUNDLE_VERSION}" upstream/main
 
 # Copy all the files to the workspace
-rm -rf "operators/cert-manager/${BUNDLE_VERSION}"
-cp -a ../../../bundle "operators/cert-manager/${BUNDLE_VERSION}"
+rm -rf "operators/kueue/${BUNDLE_VERSION}"
+cp -a ../../../bundle "operators/kueue/${BUNDLE_VERSION}"
 
 # Commit the unpatched files
-git add "operators/cert-manager/${BUNDLE_VERSION}"
+git add "operators/kueue/${BUNDLE_VERSION}"
 
 # Apply patches with operatorhub.io or OpenShift OperatorHub package specific
 # modifications. E.g. Remove securityContext.seccompProfile OpenShift packages.
 # Avoid creating backup files which, if committed to the repo cause the
 # operatorhub bundle checks to fail
-pushd "operators/cert-manager/${BUNDLE_VERSION}"
+pushd "operators/kueue/${BUNDLE_VERSION}"
 find "${repo_root}/patches/${UPSTREAM}" -type f -name "*.patch" | while read patch_file; do
     patch --no-backup-if-mismatch --version-control=never -p 2 < ${patch_file}
 done
@@ -60,8 +60,8 @@ popd
 git diff
 
 # Commit the patched files
-git add "operators/cert-manager/${BUNDLE_VERSION}"
-git commit --message "Release cert-manager-${BUNDLE_VERSION}" --signoff
+git add "operators/kueue/${BUNDLE_VERSION}"
+git commit --message "Release kueue-${BUNDLE_VERSION}" --signoff
 
 # Push to the fork
 git push origin --force-with-lease --set-upstream
