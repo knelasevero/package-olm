@@ -14,4 +14,4 @@ logo_url: https://github.com/kubernetes-sigs/descheduler/blob/master/assets/logo
 manifest_upstream: "github.com/kubernetes-sigs/descheduler/kubernetes/deployment?ref=v0.28.0"
 
 # set to "true" if the upstream manifest is meant to be built with kustomize
-kustomize_upstream: ""
+kustomize_upstream: "true"
