@@ -13,8 +13,5 @@ logo_url: https://github.com/kubernetes-sigs/descheduler/blob/master/assets/logo
 # single file manifest used to kubectl apply -f all the required CRDs, configs, services, etc
 manifest_upstream: "github.com/kubernetes-sigs/descheduler/kubernetes/deployment?ref=v0.28.0"
 
-kustomize_upstream: "true"
-
-
 # set to "true" if the upstream manifest is meant to be built with kustomize
 kustomize_upstream: ""
