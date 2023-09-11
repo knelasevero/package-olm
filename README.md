@@ -21,6 +21,10 @@ OLM will then install the newest project bundle in that release channel and perf
 [OLM CRDs]: https://olm.operatorframework.io/docs/concepts/crds/
 [Catalog Image]: https://olm.operatorframework.io/docs/glossary/#index
 
+## Before Release
+
+Edit `global-config.yaml` and `global-csv-config.yaml` with your projects info. 
+
 ## Release Process
 
 In order to test that OLM can upgrade to the new version you can perform a test release,
