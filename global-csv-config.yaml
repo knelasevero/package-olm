@@ -5,14 +5,14 @@
 # placeholders and some are left empty.
 # See https://github.com/operator-framework/community-operators/blob/master/docs/packaging-required-fields.md
 #
-# This file contains the values for those fields which should be the same across all versions of kueue.
+# This file contains the values for those fields which should be the same across all versions of the project.
 # These values are consumed by the hack/fixup-csv script, which is executed in the Makefile.
 #
 # TODO(wallrj): some of these fields such as min_ and alm_examples apply to
-# ranges of kueue versions, so we need to handle that for future
-# kueue versions where the min_kubernetes_version may need to be
+# ranges of the project versions, so we need to handle that for future
+# versions where the min_kubernetes_version may need to be
 # incremented or where new fields need to be added to the CRD samples for
-# certain kueue versions.
+# certain versions.
 
 display_name: kueue
 
@@ -67,7 +67,7 @@ alm_examples:
   spec:
     selfSigned: {}
 
-# A list of architectures for which there are kueue Docker images.
+# A list of architectures for which there are Docker images.
 # TODO: In future we should add arm (ARCH) and darwin and windows (OS)
 # but for now I've only listed the ARCH that were in the original downstream PR:
 # https://github.com/redhat-openshift-ecosystem/community-operators-prod/pull/434.

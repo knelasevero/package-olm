@@ -1,4 +1,4 @@
-projectName: kueue
+projectName:
 version: "3"
 plugins:
   manifests.sdk.operatorframework.io/v2: {}

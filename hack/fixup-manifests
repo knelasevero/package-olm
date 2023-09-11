@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Manipulate the upstream kueue yaml manifests so that they are more
+Manipulate the upstream yaml manifests so that they are more
 compatible with OLM.
 
 * Reduces the combined size of CRDs to <1MiB (the size limit of a configmap)
@@ -13,7 +13,7 @@ compatible with OLM.
   because those are so verbose and repeated multiple times.
 
 Usage:
-  hack/fixup-kueue-manifests  < build/kueue-1.4.0.upstream.yaml > build/kueue-1.4.0.olm.yaml
+  hack/fixup-manifests  < build/kueue-1.4.0.upstream.yaml > build/kueue-1.4.0.olm.yaml
 """
 import sys
 

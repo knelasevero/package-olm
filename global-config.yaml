@@ -1,0 +1,15 @@
+name: kueue
+
+version: 0.4.1
+
+bundle_version: 0.4.1
+
+img_base: registry.k8s.io/kueue/kueue
+
+e2e_cluster_name: kueue-olm
+
+logo_url: https://github.com/cncf/artwork/blob/5281c91b356fccf31aa12fcb3374799774438b59/projects/kueue/icon/color/kueue-icon-color.png?raw=true
+
+# single file manifest used to kubectl apply -f all the required CRDs, configs, services, etc
+manifest_upstream: https://github.com/kubernetes-sigs/kueue/releases/download/v0.4.1/manifests.yaml
+
