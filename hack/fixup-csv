@@ -77,16 +77,17 @@ def main():
     # Ideally operatorhub.io would just use the existing CRD name and
     # description.
     # See https://github.com/k8s-operatorhub/operatorhub.io/issues/2
-    for crd in doc["spec"]["customresourcedefinitions"]["owned"]:
-        kindAndGroup = crd["name"]
-        displayName = crd["kind"]
-        if kindAndGroup in internal_objects:
-            displayName = f"(Internal) {displayName}"
-        crd["displayName"] = displayName
-        kind, group = kindAndGroup.split(".", 1)
-        with open(f"bundle/manifests/{group}_{kind}.yaml") as f:
-            crdContent = yaml.safe_load(f)
-        crd["description"] = crdContent["spec"]["versions"][-1]["schema"]["openAPIV3Schema"]["description"]
+    if "owned" in doc["spec"]["customresourcedefinitions"]: 
+        for crd in doc["spec"]["customresourcedefinitions"]["owned"]:
+            kindAndGroup = crd["name"]
+            displayName = crd["kind"]
+            if kindAndGroup in internal_objects:
+                displayName = f"(Internal) {displayName}"
+            crd["displayName"] = displayName
+            kind, group = kindAndGroup.split(".", 1)
+            with open(f"bundle/manifests/{group}_{kind}.yaml") as f:
+                crdContent = yaml.safe_load(f)
+            crd["description"] = crdContent["spec"]["versions"][-1]["schema"]["openAPIV3Schema"]["description"]
 
     # Add multiarch labels.
     # See https://olm.operatorframework.io/docs/advanced-tasks/ship-operator-supporting-multiarch/
