@@ -69,15 +69,20 @@ ${downloadable_executables}:
 build_v = build/${BUNDLE_VERSION}
 
 project_manifest_upstream = build/${OLM_PACKAGE_NAME}.${VERSION}.upstream.yaml
-${project_manifest_upstream}: url := $(shell ./hack/get-config-value global-config.yaml manifest_upstream)
+project_manifest_upstream_url = $(shell ./hack/get-config-value global-config.yaml manifest_upstream) 
+${project_manifest_upstream}: url := ${project_manifest_upstream_url}
 
 logo = build/${OLM_PACKAGE_NAME}-logo.png
 ${logo}: url := ${LOGO_URL}
 
+is_upstream_manifest_kustomize = $(shell ./hack/get-config-value global-config.yaml kustomize_upstream)
 downloadable_files = ${project_manifest_upstream} ${logo}
 ${downloadable_files}:
 	mkdir -p $(dir $@)
 	curl --remote-time -sSL -o $@ ${url}
+	if [ "${is_upstream_manifest_kustomize}" == "true" ]; then
+	    $(abspath ${kustomize}) build ${project_manifest_upstream_url} >> ${project_manifest_upstream}
+	fi
 
 manifest_olm = ${build_v}/${OLM_PACKAGE_NAME}.${VERSION}.olm.yaml
 fixup_manifests = hack/fixup-manifests

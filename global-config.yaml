@@ -13,3 +13,5 @@ logo_url: https://github.com/cncf/artwork/blob/5281c91b356fccf31aa12fcb337479977
 # single file manifest used to kubectl apply -f all the required CRDs, configs, services, etc
 manifest_upstream: https://github.com/kubernetes-sigs/kueue/releases/download/v0.4.1/manifests.yaml
 
+# set to "true" if the upstream manifest is meant to be built with kustomize
+kustomize_upstream: ""
