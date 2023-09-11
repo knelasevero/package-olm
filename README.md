@@ -1,4 +1,4 @@
-# Packages generation for OLM
+# Package generation for OLM
 
 *⚠️ this repository was forked from https://github.com/cert-manager/cert-manager-olm and this release process is stil experimental*
 
